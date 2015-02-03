@@ -187,12 +187,16 @@ Try {
 
 
 
+
 		##*===============================================
 		##* POST-INSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Post-Installation'
 
 		## <Perform Post-Installation tasks here>
+
+        # Copy a file for SCCM Detection to trigger on.
+        # Copy-File -Path "$dirSupportFiles\$appName_$appVersion.txt" -Destination "$envProgramFiles\$appVendor\SCCM_Detection\$appName_$appVersion.txt"
 
 		## Display a message at the end of the install
 		#Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
