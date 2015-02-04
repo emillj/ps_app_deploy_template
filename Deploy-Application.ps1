@@ -160,8 +160,8 @@ Try {
         #     }
         
         # ZIP - Unzip to 
-        # Execute-Process -Path '7za.exe' -Parameters "x $dirFiles\archive.zip -o`"$envProgramFilesX86\unzip_target_folder`" -aoa"    # (7za.exe in Files, archive.zip in Files)
-        # Execute-Process -Path '7za.exe' -Parameters "x $dirSupportFiles\archive.zip -o`"$envProgramFilesX86\unzip_target_folder`" -aoa"    # (7za.exe in Files, archive.zip in SupportFiles)
+        # Execute-Process -Path '7za.exe' -Parameters "x `"$dirFiles\archive.zip`" -o`"$envProgramFilesX86\unzip_target_folder`" -aoa"    # (7za.exe in Files, archive.zip in Files)
+        # Execute-Process -Path '7za.exe' -Parameters "x `"$dirSupportFiles\archive.zip`" -o`"$envProgramFilesX86\unzip_target_folder`" -aoa"    # (7za.exe in Files, archive.zip in SupportFiles)
 
 
         # COPY FILE - Copy file from Support Files folder.
