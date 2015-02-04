@@ -125,32 +125,32 @@ Try {
         # INSTALL PROGRESS - Before every new action.
         # Show-InstallationProgress -StatusMessage "Installerar $appName $appVersion ...`nProgramfiler."
 
-		# FOLDER 
+		# FOLDER - Create new
         # New-Folder -Path "c:\temp" -ContinueOnError $TRUE
 
-        # MSI
+        # MSI - Install msi.
         # Execute-MSI -Action Install -Path "CRRuntime_32bit_13_0_11.msi"
         # Execute-MSI -Action Install -Path "PMO Client 6.0.2.235-sve.msi" -Transform "BMA Settings.mst"
         # Execute-MSI -Action Install -Path "IncitXpand.msi" -Parameters 'PS=samsrv049 PD=sum_solvesborg_sy /QN'
         # Execute-MSI -Action Install -Path "IncitXpand.msi" -Parameters 'PS=samsrv049 PD=sum_solvesborg_sy /QB!'  # '!' in '/QB!' to eliminate cansel button.
     
-        # EXE
+        # EXE - Run exe.
         # Execute-Process -Path "vcredist_x64.exe" -Parameters "/q"
 
-        # MSP
-        # xecute-MSI -Action Patch -Path "PatchB.msp" -Parameters "/passive /norestart"
+        # MSP - Install msp patch.
+        # xecute-MSI -Action Patch -Path "Patch.msp" -Parameters "/passive /norestart"
 
-        # HKCU REGISTRY for all users 
+        # HKCU REGISTRY - Add registry value in current user for all users.
         # [scriptblock]$HKCURegistrySettings = {
         #     Set-RegistryKey -Key 'HKCU\Software\Vendor\Application\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $UserProfile.SID
         #     Set-RegistryKey -Key 'HKCU\Software\Vendor\Application\Login' -Name 'site' -Value 'logonserver_name' -Type String -SID $UserProfile.SID
         #     }
         # Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
 
-        # INFO DIALOG BOX
+        # INFO DIALOG BOX - Mostly for info and/or pause during testing.
         # Show-DialogBox -Title 'Info:' -Text 'Component installation has completed. `nComponent name' -Icon 'Information'
 		
-        # CHECK OS ARCHITECTURE  (updated code, needs testing)
+        # CHECK OS ARCHITECTURE - (updated code, needs testing)
         # If ($envOSArchitecture -eq "64-bit") {
         #     Execute-MSI -Action Install -Path 'Setup_64.msi'
         #     }
@@ -159,31 +159,46 @@ Try {
         #     Execute-MSI -Action Install -Path 'Setup_x86.msi'
         #     }
         
-        # ZIP 
+        # ZIP - Unzip to 
         # Execute-Process -Path '7za.exe' -Parameters "x $dirFiles\archive.zip -o`"$envProgramFilesX86\unzip_target_folder`" -aoa"    # (7za.exe in Files, archive.zip in Files)
         # Execute-Process -Path '7za.exe' -Parameters "x $dirSupportFiles\archive.zip -o`"$envProgramFilesX86\unzip_target_folder`" -aoa"    # (7za.exe in Files, archive.zip in SupportFiles)
 
 
-        # COPY FILE
+        # COPY FILE - Copy file from Support Files folder.
         # Copy-File -Path "$dirSupportFiles\Application.ico" -Destination "$envProgramFilesX86\Vendor\Application\Application.ico"
 
-        # SHORTCUT
+        # SHORTCUT - Create shortcut.
         # New-Shortcut -Path "$envPublic\Desktop\Application.lnk" -TargetPath "$envProgramFilesX86\Vendor\Application\Application.exe" -IconLocation "$envProgramFilesX86\Vendor\Application\Application.ico" -Description "$appName $appVersion" -WorkingDirectory "$envProgramFilesX86\Vendor\Application"
 
-        # ACL folder or registry
+        # ACL - Set access rights on folder or registry. Example gives authenticated users full rights.
         # Execute-Process -Path 'setacl.exe' -Parameters "-on `"$envProgramFiles\EDP`" -ot file -actn ace -ace `"n:S-1-5-4;p:change;s:y`""    # Authenticated users, full rights to folder.
         # Execute-Process -Path 'setacl.exe' -Parameters '-on "HKEY_LOCAL_MACHINE\Software\Classes" -ot reg -actn ace -ace "n:S-1-5-4;p:full;s:y -ignoreerr'    # Authenticated users, fill rights to registy branch.
 
-        # KB
+        # KB - Test if KB is installed.
         # If (Test-MSUpdates -KBNumber 'KB3025945') {
         #     Show-InstallationPrompt -Message 'KB3025945 redan installerad. Avbryter installationen' -ButtonRightText 'OK' -Icon Information -NoWait
         #     Exit-Script -ExitCode 0 #Exit without failure
 		# 	  }
 
-        # MSU
+        # MSU - Install MS Update.
         # Execute-Process -FilePath "$envWinDir\System32\wusa.exe" -Arguments "$dirFiles\X86-all-ie9-windows6.1-kb3025945-x86.msu /quiet /norestart" -WindowStyle Hidden
 
 
+
+        # Remove previous version of application
+        # --------------------------------------
+
+
+
+
+        # Install prerequsites
+        # --------------------------------------
+
+
+
+
+        # Install application
+        # --------------------------------------
 
 
 
