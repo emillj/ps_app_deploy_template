@@ -110,7 +110,7 @@ Try {
 		Show-InstallationWelcome -CloseApps 'iexplore,chrome,firefox' -BlockExecution -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace -PersistPrompt
 		
 		## Show Progress Message (with the default message)
-		Show-InstallationProgress
+		#Show-InstallationProgress
 
 		## <Perform Pre-Installation tasks here>
 		
@@ -122,10 +122,12 @@ Try {
 		
 		## <Perform Installation tasks here>
 
+        # === EXAMPLE CODE ===
+
         # INSTALL PROGRESS - Before every new action.
         # Show-InstallationProgress -StatusMessage "Installerar $appName $appVersion ...`nProgramfiler."
 
-		# FOLDER - Create new
+	# FOLDER - Create new
         # New-Folder -Path "c:\temp" -ContinueOnError $TRUE
 
         # MSI - Install msi.
@@ -165,6 +167,7 @@ Try {
 
 
         # COPY FILE - Copy file from Support Files folder.
+        # New-Folder -Path "$envProgramFilesX86\Vendor\Application" -ContinueOnError $TRUE    # Create target folder
         # Copy-File -Path "$dirSupportFiles\Application.ico" -Destination "$envProgramFilesX86\Vendor\Application\Application.ico"
 
         # SHORTCUT - Create shortcut.
@@ -183,11 +186,16 @@ Try {
         # MSU - Install MS Update.
         # Execute-Process -FilePath "$envWinDir\System32\wusa.exe" -Arguments "$dirFiles\X86-all-ie9-windows6.1-kb3025945-x86.msu /quiet /norestart" -WindowStyle Hidden
 
+        # === END OF EXAMPLE CODE ===
+
+
 
 
         # Remove previous version of application
         # --------------------------------------
-
+        # Show-InstallationProgress -StatusMessage "Avinstallerar $appName  ...`nGamla programfiler."
+        # Execute-MSI -Action Uninstall -Path  '{36086086-C35D-4DBE-A994-A4C4A199A7AB}' # Avinstallerar Programnamn
+        # Remove-MSIApplications -Name 'Adobe Flash Player' # Avinstallerar msi med matchande namn.
 
 
 
@@ -239,11 +247,14 @@ Try {
 		
 		# <Perform Uninstallation tasks here>
 
+        # === EXAMPLE CODE ===
+
         # Update Install Progress message - Before every new action.
-        # Show-InstallationProgress -StatusMessage "Installerar $appName $appVersion ...`nProgramfiler."
+        # Show-InstallationProgress -StatusMessage "Avinstallerar $appName  ...`nProgramfiler."
 
        	# MSI, Uninstall
-		# Execute-MSI -Action Uninstall -Path  '{36086086-C35D-4DBE-A994-A4C4A199A7AB}' # Avinstallerar Programnamn
+	# Execute-MSI -Action Uninstall -Path  '{36086086-C35D-4DBE-A994-A4C4A199A7AB}' # Avinstallerar Programnamn
+        # Remove-MSIApplications -Name 'Adobe Flash Player' # Avinstallerar msi med matchande namn.
 
         # EXE, Uninstall
         # 
@@ -254,7 +265,7 @@ Try {
         # Folder, delete
         # Remove-Folder -Path "$envProgramFilesX86\Vendor\Application"
 
-
+        # === END OF EXAMPLE CODE ===
 		
 		
 		##*===============================================
