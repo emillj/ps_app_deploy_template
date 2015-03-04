@@ -107,8 +107,11 @@ Try {
 			}
 		
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -CloseApps 'iexplore,chrome,firefox' -BlockExecution -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+                # Show-InstallationWelcome -CheckDiskSpace -PersistPrompt
+		#Show-InstallationWelcome -CloseApps 'iexplore,chrome,firefox' -BlockExecution -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+		Show-InstallationWelcome -CloseApps 'iexplore,chrome,firefox,dummyapp' -BlockExecution -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace -PersistPrompt #dummyapp is a workaround a bug in .net2. If only one app listed the execution block is never removed.
 		
+
 		## Show Progress Message (with the default message)
 		#Show-InstallationProgress
 
@@ -127,14 +130,14 @@ Try {
         # INSTALL PROGRESS - Before every new action.
         # Show-InstallationProgress -StatusMessage "Installerar $appName $appVersion ...`nProgramfiler."
 
-	# FOLDER - Create new
+        # FOLDER - Create new
         # New-Folder -Path "c:\temp" -ContinueOnError $TRUE
 
         # MSI - Install msi.
-        # Execute-MSI -Action Install -Path "CRRuntime_32bit_13_0_11.msi"
-        # Execute-MSI -Action Install -Path "PMO Client 6.0.2.235-sve.msi" -Transform "BMA Settings.mst"
-        # Execute-MSI -Action Install -Path "IncitXpand.msi" -Parameters 'PS=samsrv049 PD=sum_solvesborg_sy /QN'
-        # Execute-MSI -Action Install -Path "IncitXpand.msi" -Parameters 'PS=samsrv049 PD=sum_solvesborg_sy /QB!'  # '!' in '/QB!' to eliminate cansel button.
+        # Execute-MSI -Action Install -Path "application.msi"
+        # Execute-MSI -Action Install -Path "application.msi" -Transform "BMA Settings.mst"
+        # Execute-MSI -Action Install -Path "application.msi" -Parameters 'PS=server_alias PD=database_name /QN'
+        # Execute-MSI -Action Install -Path "application.msi" -Parameters 'PS=server_alias PD=database_name /QB!'  # '!' in '/QB!' to eliminate cansel button.
     
         # EXE - Run exe.
         # Execute-Process -Path "vcredist_x64.exe" -Parameters "/q"
@@ -208,7 +211,7 @@ Try {
         # Install application
         # --------------------------------------
 
-
+        Show-InstallationProgress -StatusMessage "Installerar $appName $appVersion ...`nProgramfiler."
 
 
 		##*===============================================
@@ -223,6 +226,9 @@ Try {
 
 		## Display a message at the end of the install
 		#Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
+
+
+
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall')
 	{
@@ -253,17 +259,21 @@ Try {
         # Show-InstallationProgress -StatusMessage "Avinstallerar $appName  ...`nProgramfiler."
 
        	# MSI, Uninstall
-	# Execute-MSI -Action Uninstall -Path  '{36086086-C35D-4DBE-A994-A4C4A199A7AB}' # Avinstallerar Programnamn
+        # Execute-MSI -Action Uninstall -Path  '{36086086-C35D-4DBE-A994-A4C4A199A7AB}' # Avinstallerar Programnamn
         # Remove-MSIApplications -Name 'Adobe Flash Player' # Avinstallerar msi med matchande namn.
 
         # EXE, Uninstall
-        # 
+        # Execute-Process -Path "uninstall.exe" -Parameters "/q"
 
         # Shortcut .lnk .url, Delete
-        # Remove-File -Path 'C:\Windows\Downloaded Program Files\Temp.inf'
+        # If ( Test-Path "$envProgramData\Microsoft\Windows\Start Menu\Vendor\Application.lnk" ) {
+        #     Remove-File -Path "$envProgramData\Microsoft\Windows\Start Menu\Vendor\Application.lnk"
+        # }
 
         # Folder, delete
-        # Remove-Folder -Path "$envProgramFilesX86\Vendor\Application"
+        # If ( Test-Path "$envProgramFilesX86\Vendor\Application" ) {
+        #     Remove-Folder -Path "$envProgramFilesX86\Vendor\Application"
+        # }
 
         # === END OF EXAMPLE CODE ===
 		
