@@ -107,13 +107,14 @@ Try {
 			}
 		
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-                # Show-InstallationWelcome -CheckDiskSpace -PersistPrompt
-		#Show-InstallationWelcome -CloseApps 'iexplore,chrome,firefox' -BlockExecution -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+        # Show-InstallationWelcome -CheckDiskSpace -PersistPrompt
+		# Show-InstallationWelcome -CloseApps 'iexplore,chrome,firefox,dummyapp' -BlockExecution -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace -PersistPrompt #dummyapp is a workaround a bug in .net2. If only one app listed the execution block is never removed.
+
 		Show-InstallationWelcome -CloseApps 'iexplore,chrome,firefox,dummyapp' -BlockExecution -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace -PersistPrompt #dummyapp is a workaround a bug in .net2. If only one app listed the execution block is never removed.
 		
 
 		## Show Progress Message (with the default message)
-		#Show-InstallationProgress
+		# Show-InstallationProgress
 
 		## <Perform Pre-Installation tasks here>
 		
@@ -153,15 +154,15 @@ Try {
         # Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
 
         # INFO DIALOG BOX - Mostly for info and/or pause during testing.
-        # Show-DialogBox -Title 'Info:' -Text 'Component installation has completed. `nComponent name' -Icon 'Information'
+        # Show-DialogBox -Title 'Info:' -Text "Component installation has completed. `nComponent name' -Icon 'Information"
 		
         # CHECK OS ARCHITECTURE - (updated code, needs testing)
         # If ($envOSArchitecture -eq "64-bit") {
-        #     Execute-MSI -Action Install -Path 'Setup_64.msi'
+        #     Execute-MSI -Action Install -Path "Setup_64.msi"
         #     }
         #
         # If ($envOSArchitecture -eq "32-bit") {
-        #     Execute-MSI -Action Install -Path 'Setup_x86.msi'
+        #     Execute-MSI -Action Install -Path "Setup_x86.msi"
         #     }
         
         # ZIP - Unzip to 
@@ -188,6 +189,9 @@ Try {
 
         # MSU - Install MS Update.
         # Execute-Process -FilePath "$envWinDir\System32\wusa.exe" -Arguments "$dirFiles\X86-all-ie9-windows6.1-kb3025945-x86.msu /quiet /norestart" -WindowStyle Hidden
+
+        # FILE DELETE IN ALL PROFILES - Delete unique file from all local userprofiles
+        # Execute-Process -Path "$envWinDir\system32\cmd.exe" -Parameters "/C CD $envSystemDrive\USERS &&del /S /F /Q unique_filename.INI"
 
         # === END OF EXAMPLE CODE ===
 
@@ -267,12 +271,12 @@ Try {
 
         # Shortcut .lnk .url, Delete
         # If ( Test-Path "$envProgramData\Microsoft\Windows\Start Menu\Vendor\Application.lnk" ) {
-        #     Remove-File -Path "$envProgramData\Microsoft\Windows\Start Menu\Vendor\Application.lnk"
+        #     Remove-File -Path "$envProgramData\Microsoft\Windows\Start Menu\Vendor\Application.lnk" -ContinueOnError $TRUE
         # }
 
         # Folder, delete
         # If ( Test-Path "$envProgramFilesX86\Vendor\Application" ) {
-        #     Remove-Folder -Path "$envProgramFilesX86\Vendor\Application"
+        #     Remove-Folder -Path "$envProgramFilesX86\Vendor\Application" -ContinueOnError $TRUE
         # }
 
         # === END OF EXAMPLE CODE ===
