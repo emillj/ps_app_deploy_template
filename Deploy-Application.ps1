@@ -55,7 +55,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '01/01/2015'
+	[string]$appScriptDate = '01/03/2015'
 	[string]$appScriptAuthor = 'emil.ljungstedt@sbkf.se'
 	##*===============================================
 	
@@ -107,10 +107,10 @@ Try {
 			}
 		
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-        # Show-InstallationWelcome -CheckDiskSpace -PersistPrompt
+        	# Show-InstallationWelcome -CheckDiskSpace -PersistPrompt
 		# Show-InstallationWelcome -CloseApps 'iexplore,chrome,firefox,dummyapp' -BlockExecution -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace -PersistPrompt #dummyapp is a workaround a bug in .net2. If only one app listed the execution block is never removed.
 
-		Show-InstallationWelcome -CloseApps 'iexplore,chrome,firefox,dummyapp' -BlockExecution -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace -PersistPrompt #dummyapp is a workaround a bug in .net2. If only one app listed the execution block is never removed.
+		Show-InstallationWelcome -CheckDiskSpace -PersistPrompt
 		
 
 		## Show Progress Message (with the default message)
@@ -146,6 +146,9 @@ Try {
         # MSP - Install msp patch.
         # xecute-MSI -Action Patch -Path "Patch.msp" -Parameters "/passive /norestart"
 
+        # HKLM REGISTRY
+        # Set-RegistryKey -Key 'HKLM\Software\Vendor\Application\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord #Type: 'Binary', 'DWord', 'ExpandString', 'MultiString', 'None', 'QWord', 'String', 'Unknown'
+
         # HKCU REGISTRY - Add registry value in current user for all users.
         # [scriptblock]$HKCURegistrySettings = {
         #     Set-RegistryKey -Key 'HKCU\Software\Vendor\Application\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $UserProfile.SID
@@ -175,6 +178,7 @@ Try {
         # Copy-File -Path "$dirSupportFiles\Application.ico" -Destination "$envProgramFilesX86\Vendor\Application\Application.ico"
 
         # SHORTCUT - Create shortcut.
+	# New-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\Application\Application.lnk" -TargetPath "$envProgramFilesX86\Vendor\Application\Application.exe" -Description "$appName $appVersion" -WorkingDirectory "$envProgramFilesX86\Vendor\Application"
         # New-Shortcut -Path "$envPublic\Desktop\Application.lnk" -TargetPath "$envProgramFilesX86\Vendor\Application\Application.exe" -IconLocation "$envProgramFilesX86\Vendor\Application\Application.ico" -Description "$appName $appVersion" -WorkingDirectory "$envProgramFilesX86\Vendor\Application"
 
         # ACL - Set access rights on folder or registry. Example gives authenticated users full rights.
