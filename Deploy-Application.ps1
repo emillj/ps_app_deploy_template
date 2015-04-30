@@ -2,7 +2,7 @@
 .SYNOPSIS
 	This script performs the installation or uninstallation of an application(s).
 .DESCRIPTION
-	The script is provided as a template to perform an install or uninstall of an application(s). 
+	The script is provided as a template to perform an install or uninstall of an application(s).
 	The script either performs an "Install" deployment type or an "Uninstall" deployment type.
 	The install deployment type is broken down into 3 main sections/phases: Pre-Install, Install, and Post-Install.
 	The script dot-sources the AppDeployToolkitMain.ps1 script which contains the logic and functions required to install or uninstall an application.
@@ -14,6 +14,8 @@
 	Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
 .PARAMETER TerminalServerMode
 	Changes to "user install mode" and back to "user execute mode" for installing/uninstalling applications for Remote Destkop Session Hosts/Citrix servers.
+.PARAMETER DisableLogging
+	Disables logging to file for the script. Default is: $false.
 .EXAMPLE
 	Deploy-Application.ps1
 .EXAMPLE
@@ -23,13 +25,17 @@
 .EXAMPLE
 	Deploy-Application.ps1 -DeploymentType Uninstall
 .NOTES
+	Toolkit Exit Code Ranges:
+	60000 - 68999: Reserved for built-in exit codes in Deploy-Application.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
+	69000 - 69999: Recommended for user customized exit codes in Deploy-Application.ps1
+	70000 - 79999: Recommended for user customized exit codes in AppDeployToolkitExtensions.ps1
 .LINK 
 	http://psappdeploytoolkit.codeplex.com
 #>
 [CmdletBinding()]
 Param (
 	[Parameter(Mandatory=$false)]
-	[ValidateSet('Install','Uninstall')] 
+	[ValidateSet('Install','Uninstall')]
 	[string]$DeploymentType = 'Install',
 	[Parameter(Mandatory=$false)]
 	[ValidateSet('Interactive','Silent','NonInteractive')]
@@ -37,7 +43,9 @@ Param (
 	[Parameter(Mandatory=$false)]
 	[switch]$AllowRebootPassThru = $false,
 	[Parameter(Mandatory=$false)]
-	[switch]$TerminalServerMode = $false
+	[switch]$TerminalServerMode = $false,
+	[Parameter(Mandatory=$false)]
+	[switch]$DisableLogging = $false
 )
 
 Try {
@@ -55,7 +63,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '01/03/2015'
+	[string]$appScriptDate = '01/05/2015'
 	[string]$appScriptAuthor = 'emil.ljungstedt@sbkf.se'
 	##*===============================================
 	
@@ -67,8 +75,8 @@ Try {
 	
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
-	[version]$deployAppScriptVersion = [version]'3.5.0'
-	[string]$deployAppScriptDate = '11/17/2014'
+	[version]$deployAppScriptVersion = [version]'3.6.1'
+	[string]$deployAppScriptDate = '03/26/2015'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -78,16 +86,13 @@ Try {
 	Try {
 		[string]$moduleAppDeployToolkitMain = "$scriptDirectory\AppDeployToolkit\AppDeployToolkitMain.ps1"
 		If (-not (Test-Path -Path $moduleAppDeployToolkitMain -PathType Leaf)) { Throw "Module does not exist at the specified location [$moduleAppDeployToolkitMain]." }
-		. $moduleAppDeployToolkitMain
+		If ($DisableLogging) { . $moduleAppDeployToolkitMain -DisableLogging } Else { . $moduleAppDeployToolkitMain }
 	}
 	Catch {
-		[int32]$mainExitCode = 1
-		Write-Output "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message) `n$($_.InvocationInfo.PositionMessage)"
+		[int32]$mainExitCode = 60008
+		Write-Error -Message "Module [$moduleAppDeployToolkitMain] failed to load: `n$($_.Exception.Message)`n `n$($_.InvocationInfo.PositionMessage)" -ErrorAction 'Continue'
 		Exit $mainExitCode
 	}
-	
-	## Handle ServiceUI Invocation
-	If ($serviceUIExitCode) { Exit-Script -ExitCode $serviceUIExitCode }
 	
 	#endregion
 	##* Do not modify section above
@@ -101,21 +106,19 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Pre-Installation'
 
-		#Exit with error if Powerpoint Presentation is running in full screen.
+		#Exit with error if Powerpoint Presentation is running in full screen. (emil.ljungstedt@sbkf.se 20150430)
 	        If (Test-PowerPoint) {
             		Exit-Script -ExitCode 60500
 			}
 		
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-        	# Show-InstallationWelcome -CheckDiskSpace -PersistPrompt
-		# Show-InstallationWelcome -CloseApps 'iexplore,chrome,firefox,dummyapp' -BlockExecution -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace -PersistPrompt #dummyapp is a workaround a bug in .net2. If only one app listed the execution block is never removed.
-
-		Show-InstallationWelcome -CheckDiskSpace -PersistPrompt
+		#Show-InstallationWelcome -CloseApps 'iexplore' -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+		#Show-InstallationWelcome -CloseApps 'iexplore, dummyapp' -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt # (emil.ljungstedt@sbkf.se 20150430)
+		#Show-InstallationWelcome -CheckDiskSpace -PersistPrompt # (emil.ljungstedt@sbkf.se 20150430)
 		
-
 		## Show Progress Message (with the default message)
-		# Show-InstallationProgress
-
+		# Show-InstallationProgress (emil.ljungstedt@sbkf.se 20150430)
+		
 		## <Perform Pre-Installation tasks here>
 		
 		
@@ -124,9 +127,12 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Installation'
 		
+		## Handle Zero-Config MSI Installations
+		If ($useDefaultMsi) { Execute-MSI -Action 'Install' -Path $defaultMsiFile }
+		
 		## <Perform Installation tasks here>
 
-        # === EXAMPLE CODE ===
+        # === EXAMPLE CODE === (emil.ljungstedt@sbkf.se 20150430)
 
         # INSTALL PROGRESS - Before every new action.
         # Show-InstallationProgress -StatusMessage "Installerar $appName $appVersion ...`nProgramfiler."
@@ -226,17 +232,14 @@ Try {
 		##* POST-INSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Post-Installation'
-
+		
 		## <Perform Post-Installation tasks here>
 
-        # Copy a file for SCCM Detection to trigger on.
-        # Copy-File -Path "$dirSupportFiles\$appName_$appVersion.txt" -Destination "$envProgramFiles\$appVendor\SCCM_Detection\$appName_$appVersion.txt"
+        	# Copy a file for SCCM Detection to trigger on. (emil.ljungstedt@sbkf.se 20150430)
+        	# Copy-File -Path "$dirSupportFiles\$appName_$appVersion.txt" -Destination "$envProgramFiles\$appVendor\SCCM_Detection\$appName_$appVersion.txt"
 
 		## Display a message at the end of the install
-		#Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
-
-
-
+		# If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait } (emil.ljungstedt@sbkf.se 20150430)
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall')
 	{
@@ -259,9 +262,12 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Uninstallation'
 		
+		## Handle Zero-Config MSI Uninstallations
+		If ($useDefaultMsi) { Execute-MSI -Action 'Uninstall' -Path $defaultMsiFile }
+		
 		# <Perform Uninstallation tasks here>
 
-        # === EXAMPLE CODE ===
+        # === EXAMPLE CODE === (emil.ljungstedt@sbkf.se 20150430)
 
         # Update Install Progress message - Before every new action.
         # Show-InstallationProgress -StatusMessage "Avinstallerar $appName  ...`nProgramfiler."
@@ -292,6 +298,8 @@ Try {
 		[string]$installPhase = 'Post-Uninstallation'
 		
 		## <Perform Post-Uninstallation tasks here>
+		
+		
 	}
 	
 	##*===============================================
@@ -302,7 +310,7 @@ Try {
 	Exit-Script -ExitCode $mainExitCode
 }
 Catch {
-	[int32]$mainExitCode = 1
+	[int32]$mainExitCode = 60001
 	[string]$mainErrorMessage = "$(Resolve-Error)"
 	Write-Log -Message $mainErrorMessage -Severity 3 -Source $deployAppScriptFriendlyName
 	Show-DialogBox -Text $mainErrorMessage -Icon 'Stop'
