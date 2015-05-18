@@ -56,7 +56,8 @@ namespace PSADT
 		[DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		private static extern int SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
 		
-		public static void RefreshDesktopAndEnvironmentVariables() {
+		public static void RefreshDesktopAndEnvironmentVariables()
+		{
 			// Update desktop icons
 			SHChangeNotify(0x8000000, 0x1000, IntPtr.Zero, IntPtr.Zero);
 			// Update environment variables
@@ -378,14 +379,14 @@ namespace PSADT
 		
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
 		public static extern bool ProcessIdToSessionId(int processId, ref int pSessionId);
-
+		
 		public class TerminalSessionData
 		{
 			public int SessionId;
-			public WTS_CONNECTSTATE_CLASS ConnectionState;
+			public string ConnectionState;
 			public string SessionName;
 			public bool IsUserSession;
-			public TerminalSessionData(int sessionId, WTS_CONNECTSTATE_CLASS connState, string sessionName, bool isUserSession)
+			public TerminalSessionData(int sessionId, string connState, string sessionName, bool isUserSession)
 			{
 				SessionId = sessionId;
 				ConnectionState = connState;
@@ -402,10 +403,12 @@ namespace PSADT
 			public string DomainName;
 			public int SessionId;
 			public string SessionName;
-			public WTS_CONNECTSTATE_CLASS ConnectState;
+			public string ConnectState;
 			public bool IsCurrentSession;
 			public bool IsConsoleSession;
+			public bool IsActiveUserSession;
 			public bool IsUserSession;
+			public bool IsRdpSession;
 			public bool IsLocalAdmin;
 			public DateTime? LogonTime;
 			public TimeSpan? IdleTime;
@@ -556,7 +559,7 @@ namespace PSADT
 					{
 						_isUserSession = true;
 					}
-					results.Add(new TerminalSessionData(sessionInfo.SessionId, sessionInfo.State, sessionInfo.SessionName, _isUserSession));
+					results.Add(new TerminalSessionData(sessionInfo.SessionId, sessionInfo.State.ToString(), sessionInfo.SessionName, _isUserSession));
 					_isUserSession = false;
 				}
 			}
@@ -643,10 +646,12 @@ namespace PSADT
 				if (intData == 2)
 				{
 					strData = "RDP";
+					data.IsRdpSession = true;
 				}
 				else
 				{
 					strData = "";
+					data.IsRdpSession = false;
 				}
 				data.ClientProtocolType = strData;
 				
@@ -655,7 +660,7 @@ namespace PSADT
 					return data;
 				}
 				lData = Marshal.ReadInt32(buffer);
-				data.ConnectState = (WTS_CONNECTSTATE_CLASS)Enum.ToObject(typeof(WTS_CONNECTSTATE_CLASS), lData);
+				data.ConnectState = ((WTS_CONNECTSTATE_CLASS) lData).ToString();
 				
 				if (WTSQuerySessionInformation(server, SessionId, WTS_INFO_CLASS.SessionId, out buffer, out bytesReturned) == false)
 				{
@@ -709,7 +714,7 @@ namespace PSADT
 				}
 				strData = Marshal.PtrToStringAnsi(buffer);
 				data.SessionName = strData;
-				if (strData != "Services" && strData != "RDP-Tcp")
+				if (strData != "Services" && strData != "RDP-Tcp" && data.UserName != String.Empty)
 				{
 					_IsUserSession = true;
 				}
@@ -743,6 +748,64 @@ namespace PSADT
 				CloseServer(server);
 			}
 			return data;
+		}
+		
+		public static TerminalSessionInfo[] GetUserSessionInfo(string ServerName)
+		{
+			if (ServerName == "localhost" || ServerName == String.Empty)
+			{
+				ServerName = Environment.MachineName;
+			}
+			
+			// Find and get detailed information for all user sessions
+			// Also determine the active user session. If a console user exists, then that will be the active user session.
+			// If no console user exists but users are logged in, such as on terminal servers, then select the first logged-in non-console user that is either 'Active' or 'Connected' as the active user.
+			TerminalSessionData[] sessions = ListSessions(ServerName);
+			TerminalSessionInfo sessionInfo = new TerminalSessionInfo();
+			List<TerminalSessionInfo> userSessionsInfo = new List<TerminalSessionInfo>();
+			string firstActiveUserNTAccount = String.Empty;
+			bool IsActiveUserSessionSet = false;
+			foreach (TerminalSessionData session in sessions)
+			{
+				if (session.IsUserSession == true)
+				{
+					sessionInfo = GetSessionInfo(ServerName, session.SessionId);
+					if (sessionInfo.IsUserSession == true)
+					{
+						if ((firstActiveUserNTAccount == String.Empty) && (sessionInfo.ConnectState == "Active" || sessionInfo.ConnectState == "Connected"))
+						{
+							firstActiveUserNTAccount = sessionInfo.NTAccount;
+						}
+						
+						if (sessionInfo.IsConsoleSession == true)
+						{
+							sessionInfo.IsActiveUserSession = true;
+							IsActiveUserSessionSet = true;
+						}
+						else
+						{
+							sessionInfo.IsActiveUserSession = false;
+						}
+						
+						userSessionsInfo.Add(sessionInfo);
+					}
+				}
+			}
+			
+			TerminalSessionInfo[] userSessions = userSessionsInfo.ToArray();
+			if (IsActiveUserSessionSet == false)
+			{
+				foreach (TerminalSessionInfo userSession in userSessions)
+				{
+					if (userSession.NTAccount == firstActiveUserNTAccount)
+					{
+						userSession.IsActiveUserSession = true;
+						break;
+					}
+				}
+			}
+			
+			return userSessions;
 		}
 	}
 }
