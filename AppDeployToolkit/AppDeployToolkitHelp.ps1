@@ -7,7 +7,7 @@
 	AppDeployToolkitHelp.ps1
 .NOTES
 .LINK
-	http://psappdeploytoolkit.codeplex.com
+	http://psappdeploytoolkit.com
 #>
 
 ##*===============================================
@@ -17,8 +17,8 @@
 ## Variables: Script
 [string]$appDeployToolkitHelpName = 'PSAppDeployToolkitHelp'
 [string]$appDeployHelpScriptFriendlyName = 'App Deploy Toolkit Help'
-[version]$appDeployHelpScriptVersion = [version]'3.5.0'
-[string]$appDeployHelpScriptDate = '11/06/2014'
+[version]$appDeployHelpScriptVersion = [version]'3.6.5'
+[string]$appDeployHelpScriptDate = '08/17/2015'
 
 ## Variables: Environment
 [string]$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
@@ -35,17 +35,17 @@
 
 Function Show-HelpConsole {
 	## Import the Assemblies
-	Add-Type -AssemblyName System.Windows.Forms -ErrorAction 'Stop'
+	Add-Type -AssemblyName 'System.Windows.Forms' -ErrorAction 'Stop'
 	Add-Type -AssemblyName System.Drawing -ErrorAction 'Stop'
 
 	## Form Objects
-	$HelpForm = New-Object -TypeName System.Windows.Forms.Form
-	$HelpListBox = New-Object -TypeName System.Windows.Forms.ListBox
-	$HelpTextBox = New-Object -TypeName System.Windows.Forms.RichTextBox
-	$InitialFormWindowState = New-Object -TypeName System.Windows.Forms.FormWindowState
+	$HelpForm = New-Object -TypeName 'System.Windows.Forms.Form'
+	$HelpListBox = New-Object -TypeName 'System.Windows.Forms.ListBox'
+	$HelpTextBox = New-Object -TypeName 'System.Windows.Forms.RichTextBox'
+	$InitialFormWindowState = New-Object -TypeName 'System.Windows.Forms.FormWindowState'
 
 	## Form Code
-	$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+	$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 	$System_Drawing_Size.Height = 665
 	$System_Drawing_Size.Width = 957
 	$HelpForm.ClientSize = $System_Drawing_Size
@@ -56,19 +56,19 @@ Function Show-HelpConsole {
 	$HelpForm.ShowInTaskbar = $true
 	$HelpForm.FormBorderStyle = 'Fixed3D'
 	$HelpForm.MaximizeBox = $false
-	$HelpForm.Icon = New-Object -TypeName System.Drawing.Icon -ArgumentList $AppDeployLogoIcon
+	$HelpForm.Icon = New-Object -TypeName 'System.Drawing.Icon' -ArgumentList $AppDeployLogoIcon
 	$HelpListBox.Anchor = 7
 	$HelpListBox.BorderStyle = 1
 	$HelpListBox.DataBindings.DefaultDataSourceUpdateMode = 0
-	$HelpListBox.Font = New-Object -TypeName System.Drawing.Font -ArgumentList ('Microsoft Sans Serif', 9.75, 1, 3, 1)
+	$HelpListBox.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ('Microsoft Sans Serif', 9.75, 1, 3, 1)
 	$HelpListBox.FormattingEnabled = $true
 	$HelpListBox.ItemHeight = 16
-	$System_Drawing_Point = New-Object -TypeName System.Drawing.Point
+	$System_Drawing_Point = New-Object -TypeName 'System.Drawing.Point'
 	$System_Drawing_Point.X = 0
 	$System_Drawing_Point.Y = 0
 	$HelpListBox.Location = $System_Drawing_Point
 	$HelpListBox.Name = 'HelpListBox'
-	$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+	$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 	$System_Drawing_Size.Height = 658
 	$System_Drawing_Size.Width = 271
 	$HelpListBox.Size = $System_Drawing_Size
@@ -77,13 +77,13 @@ Function Show-HelpConsole {
 	$HelpListBox.add_SelectedIndexChanged({ $HelpTextBox.Text = Get-Help -Name $HelpListBox.SelectedItem -Detailed | Out-String })
 	$helpFunctions = Get-Command -CommandType 'Function' | Where-Object { ($_.HelpUri -match 'psappdeploytoolkit') -and ($_.Definition -notmatch 'internal script function') } | Select-Object -ExpandProperty Name
 	ForEach ($helpFunction in $helpFunctions) {
-		$HelpListBox.Items.Add($helpFunction) | Out-Null
+		$null = $HelpListBox.Items.Add($helpFunction)
 	}
 	$HelpForm.Controls.Add($HelpListBox)
 	$HelpTextBox.Anchor = 11
 	$HelpTextBox.BorderStyle = 1
 	$HelpTextBox.DataBindings.DefaultDataSourceUpdateMode = 0
-	$HelpTextBox.Font = New-Object -TypeName System.Drawing.Font -ArgumentList ('Microsoft Sans Serif', 8.5, 0, 3, 1)
+	$HelpTextBox.Font = New-Object -TypeName 'System.Drawing.Font' -ArgumentList ('Microsoft Sans Serif', 8.5, 0, 3, 1)
 	$HelpTextBox.ForeColor = [System.Drawing.Color]::FromArgb(255, 0, 0, 0)
 	$System_Drawing_Point = New-Object -TypeName System.Drawing.Point
 	$System_Drawing_Point.X = 277
@@ -91,7 +91,7 @@ Function Show-HelpConsole {
 	$HelpTextBox.Location = $System_Drawing_Point
 	$HelpTextBox.Name = 'HelpTextBox'
 	$HelpTextBox.ReadOnly = $True
-	$System_Drawing_Size = New-Object -TypeName System.Drawing.Size
+	$System_Drawing_Size = New-Object -TypeName 'System.Drawing.Size'
 	$System_Drawing_Size.Height = 658
 	$System_Drawing_Size.Width = 680
 	$HelpTextBox.Size = $System_Drawing_Size
@@ -104,7 +104,7 @@ Function Show-HelpConsole {
 	## Init the OnLoad event to correct the initial state of the form
 	$HelpForm.add_Load($OnLoadForm_StateCorrection)
 	## Show the Form
-	$HelpForm.ShowDialog() | Out-Null
+	$null = $HelpForm.ShowDialog()
 }
 
 ##*===============================================

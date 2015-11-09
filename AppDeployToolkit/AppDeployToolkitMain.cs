@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Date Modified: 08-17-2015
+// Version Number: 3.6.5
+
+using System;
 using System.Text;
 using System.Collections;
 using System.ComponentModel;
@@ -60,8 +63,9 @@ namespace PSADT
 		{
 			// Update desktop icons
 			SHChangeNotify(0x8000000, 0x1000, IntPtr.Zero, IntPtr.Zero);
-			// Update environment variables
 			SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, IntPtr.Zero, null, SMTO_ABORTIFHUNG, 100, IntPtr.Zero);
+			// Update environment variables
+			SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, IntPtr.Zero, "Environment", SMTO_ABORTIFHUNG, 100, IntPtr.Zero);
 		}
 	}
 	
