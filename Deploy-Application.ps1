@@ -339,7 +339,7 @@ Try {
 		[string]$installPhase = 'Pre-Uninstallation'
 		
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
-		Show-InstallationWelcome -CloseApps 'iexplore' -CloseAppsCountdown 60
+		Show-InstallationWelcome # -CloseApps 'iexplore' -CloseAppsCountdown 60
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -379,7 +379,9 @@ Try {
         Remove-MSIApplications -Name 'Adobe Flash Player' # Avinstallerar msi med matchande namn.
 
         # EXE, Uninstall
-        Execute-Process -Path "uninstall.exe" -Parameters "/q"
+        If ( Test-Path "uninstall.exe" ) {
+            Execute-Process -Path "uninstall.exe" -Parameters "/q" # -ContinueOnError $TRUE
+        }
 
         # DLL - Register DLL
         Execute-Process -Path "$envSystem32Directory\regsvr32.exe" -Parameters "/u /s filename.dll" -WorkingDirectory "$envProgramFilesX86\dllfolder" -ContinueOnError $TRUE
