@@ -1,0 +1,13 @@
+[Install when user is logged on]
+Yes/No
+
+[Require "Allow userinteraction"]
+Yes/No
+
+[Require x64]
+Yes/No
+
+[Detection Method]
+MSI Product Code: {11111111-1111-1111-1111-111111111111}
+File exist:
+Folder exist:
