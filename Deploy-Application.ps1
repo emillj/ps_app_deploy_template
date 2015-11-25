@@ -80,7 +80,7 @@ Try {
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '2015-11-18'
+	[string]$appScriptDate = '2015-11-25'
 	[string]$appScriptAuthor = 'emil.ljungstedt@sbkf.se'
 	##*===============================================
         ## Variables: SBKF Script settings
@@ -178,6 +178,7 @@ Try {
     
         # EXE - Run exe.
         Execute-Process -Path "$dirFiles\vcredist_x64.exe" -Parameters "/q" # -WorkingDirectory "$dirFiles" -ContinueOnError $TRUE
+        Execute-Process -Path "$dirFiles\Inno_Setup.exe" -Parameters "/SILENT /NOCANCEL /NORESTART /DIR=`"$envProgramFilesX86\Vendor\Application`""    # Example of 32-bit InnoSetup silent install
 
         # DLL - Register DLL (unregister first for rapair capability)
         Execute-Process -Path "$envSystem32Directory\regsvr32.exe" -Parameters "/s /u filename.dll" -WorkingDirectory "$envProgramFilesX86\dllfolder"
@@ -379,8 +380,8 @@ Try {
         Remove-MSIApplications -Name 'Adobe Flash Player' # Avinstallerar msi med matchande namn.
 
         # EXE, Uninstall
-        If ( Test-Path "uninstall.exe" ) {
-            Execute-Process -Path "uninstall.exe" -Parameters "/q" # -ContinueOnError $TRUE
+        If ( Test-Path "$envProgramFilesX86\Vendor\Application\uninstall.exe" ) {
+            Execute-Process -Path "$envProgramFilesX86\Vendor\Application\uninstall.exe" -Parameters "/q" # -ContinueOnError $TRUE
         }
 
         # DLL - Register DLL
